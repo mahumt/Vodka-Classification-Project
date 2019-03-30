@@ -1,3 +1,15 @@
+import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+import seaborn as sns
+import matplotlib.pyplot as plt
+plt.style.use('seaborn-white') #for jupyter dark, change style
+%matplotlib inline
+%config InlineBackend.figure_format = 'svg' #Graphics in SVG format are more sharp and legible
+import scipy.sparse
+import warnings
+import random
+
 
 df_new= pd.read_csv("data/vodka/vodka_modeler.csv", sep='|')
 
