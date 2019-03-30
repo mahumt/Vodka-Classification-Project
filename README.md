@@ -28,3 +28,4 @@ for chunk in r.iter_content(chunk_size = 512 * 1024): # Reads 512KB at a time in
         f.write(chunk)
 f.close()
 ```
+All the code has comments along with the code, so hopefully everything will be self-explanatory
