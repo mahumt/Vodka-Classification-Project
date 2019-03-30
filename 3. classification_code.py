@@ -86,9 +86,10 @@ print (corr1['category'].sort_values(ascending=False)[:15])
 f, ax = plt.subplots(figsize=(30, 30))
 
 # Linear Seperability test
-#another thing to test is whether the data is linearly seperable i.e. a straight line of hyperplane can cut through all the categories.
-#we need to know whther linear classifiers or linear kernels will work efficently.
-# there are several ways to test this: linear programming, a perceptron (commonly single layer), clustering with 100% purity: linear classifer 
+# another thing to test is whether the data is linearly seperable i.e. a straight line of hyperplane can cut through all the categories.
+# we need to know whther linear classifiers or linear kernels will work efficently.
+# there are several ways to test this: linear programming, a perceptron (commonly single layer), 
+# clustering with 100% purity: linear classifer 
 # with no errors and the most visual and easy to understand: computational geometry using ```ConvexHull```
 
 
@@ -133,7 +134,8 @@ predictors = log_df[['total_sales', 'store_population_ratio',
 print(predictors.shape)
 
 # Filling null values
-predictors.fillna(predictors.mean(), inplace=True) #filling with 0 messes with train_test_split, better to fill predictors, less demadning on RAM
+#filling with 0 messes with train_test_split
+predictors.fillna(predictors.mean(), inplace=True) # better to fill predictors, less demadning on RAM
 #log_df = log_df.dropna() # dropping null values leaves us with round 1% of the data.
 
 #predictors are off different scale: so we standardize them.
@@ -149,7 +151,7 @@ target = log_df['category']
 target = target.sample(200000)
 
 # label encoder used to change the categories into a proper cateogrical value
-le = preprocessing.LabelEncoder() #label encoder only takes 1-d array so if we need a dataframe encoded: df.apply(LabelEncoder().fit_transform)
+le = preprocessing.LabelEncoder() #label encoder for 1-d array, so if dataframe encoded: df.apply(LabelEncoder().fit_transform)
 target = le.fit_transform(target)
 
 #split the data in 80% training set and 20% test set
@@ -194,7 +196,8 @@ ax.set_xticklabels(names)
 plt.style.use('seaborn-white')
 plt.show();
 
-# Both QDA and Gaussian Naive Bayes, have wildly different mean and standard deviations, due to either being unsuitable of being too simple
+# Both QDA and Gaussian Naive Bayes, have wildly different mean and standard deviations
+# due to either being unsuitable or being too simple
 # hence they are both dropped
 
 #define model_func which fits, trains and predicts using different models: better than running messier repetitive code for each model
@@ -209,14 +212,18 @@ def model_func(alg, X_train, X_test, Y_train, Y_test, target, predictors, filena
     dtrain_predictions = alg.predict(X_train)
 
     #Perform cross-validation:
-    cv_score = model_selection.cross_val_score(alg, X_train, Y_train , cv=10, scoring='neg_mean_squared_error') #scoring='accuracy', cv=kfold
+    cv_score = model_selection.cross_val_score(alg, X_train, Y_train , cv=10, scoring='neg_mean_squared_error') 
+	#scoring='accuracy', cv=kfold
     #kfold = model_selection.KFold(n_splits=10, random_state=seed) #(n=num_instances, n_folds=num_folds=n_splits=n-fold CV)
     cv_score = np.sqrt(np.abs(cv_score))
     
     #Print model report:
     print("\nModel Report")
     print("RMSE : %.4g" % np.sqrt(metrics.mean_squared_error((Y_train), dtrain_predictions)))
-    print("CV Score : Mean - %.4g | Std - %.4g | Min - %.4g | Max - %.4g" % (np.mean(cv_score), np.std(cv_score), np.min(cv_score), np.max(cv_score)))
+    print("CV Score : Mean - %.4g | Std - %.4g | Min - %.4g | Max - %.4g" % (np.mean(cv_score),
+									     np.std(cv_score), 
+									     np.min(cv_score),
+									     np.max(cv_score)))
     
     #Predict on testing data and computing error rate:
     #dtest[target] = alg.predict(dtest[predictors])
@@ -265,8 +272,9 @@ warnings.filterwarnings('once') # to get warnings once in case the coefficents a
 
 # L1 regularization: Ridge, L2 regularization: Lasso
 
-#For multinomial there are only ‘newton-cg’, ‘sag’, ‘saga’ and ‘lbfgs’ that handle multinomial loss. only SAGA regularizes using L1 and L2
-# when multi_class='multinomial',solver ='saga' SoftMax function used
+#For multinomial there are only ‘newton-cg’, ‘sag’, ‘saga’ and ‘lbfgs’ that handle multinomial loss.
+#only SAGA regularizes has both L1 and L2
+# when multi_class='multinomial'  SoftMax function used instead of the common sigmoid
 logregl1 = LogisticRegression(multi_class='multinomial',solver ='saga', tol= 1e-2, penalty= 'l1', max_iter=1000)
 logregl2 = LogisticRegression(multi_class='multinomial',solver ='saga', tol = 1e-2, penalty= 'l2', max_iter=1000)
 logregCVl1 = LogisticRegressionCV(multi_class='multinomial',solver ='saga', tol=1e-2, cv = 3, penalty = 'l1', max_iter=1000)
@@ -291,7 +299,8 @@ model_func(svm, X_train, X_test, Y_train, Y_test, predictors, target, 'data\vodk
 
 
 # The KNN, decision tree  (CART) and random forests classifier run in the same vein as the above model_func
-# but feature importance and mapping the decision path is much more important and hence model_func cant be used and we need to do the code sperately
+# but feature importance and mapping the decision path is much more important and hence model_func
+# cant be used and we need to do the code sperately
 from sklearn.externals.six import StringIO  
 from IPython.display import Image  
 from sklearn.tree import export_graphviz
@@ -538,3 +547,88 @@ common_node_id = np.arange(n_nodes)[common_nodes]
 print("\nThe following samples %s share the node %s in the tree"
       % (sample_ids, common_node_id))
 print("It is %s %% of all nodes." % (100 * len(common_node_id) / n_nodes,))
+
+#Mappingo out the deicsion path of Random Forest
+estimator = RandomForestClassifier(n_estimators=10, random_state=0)
+estimator.fit(X_train, Y_train)
+
+n_nodes_ = [t.tree_.node_count for t in estimator.estimators_] #estimator.tree_.node_count
+children_left_ = [t.tree_.children_left for t in estimator.estimators_]
+children_right_ = [t.tree_.children_right for t in estimator.estimators_]
+feature_ = [t.tree_.feature for t in estimator.estimators_]
+threshold_ = [t.tree_.threshold for t in estimator.estimators_]
+
+def explore_tree(estimator, n_nodes, children_left,children_right, feature,threshold, suffix='', print_tree= False, sample_id=0, feature_names=None):
+
+    if not feature_names:
+        feature_names = feature
+    assert len(feature_names) == X_train.shape[1], "The feature names do not match the number of features."
+    # The tree structure can be traversed to compute various properties such
+    # as the depth of each node and whether or not it is a leaf.
+    node_depth = np.zeros(shape=n_nodes, dtype=np.int64)
+    is_leaves = np.zeros(shape=n_nodes, dtype=bool)
+    stack = [(0, -1)]  # seed is the root node id and its parent depth
+    while len(stack) > 0:
+        node_id, parent_depth = stack.pop()
+        node_depth[node_id] = parent_depth + 1
+        # If we have a test node
+        if (children_left[node_id] != children_right[node_id]):
+            stack.append((children_left[node_id], parent_depth + 1))
+            stack.append((children_right[node_id], parent_depth + 1))
+        else:
+            is_leaves[node_id] = True
+    print("The binary tree structure has %s nodes"  % n_nodes)
+    if print_tree:
+        print("Tree structure: \n")
+        for i in range(n_nodes):
+            if is_leaves[i]:
+                print("%snode=%s leaf node." % (node_depth[i] * "\t", i))
+            else:
+                print("%snode=%s test node: go to node %s if X[:, %s] <= %s else to "
+                      "node %s." % (node_depth[i] * "\t",i,children_left[i],
+                         feature[i], threshold[i], children_right[i],))
+            print("\n")
+        print()
+    # First let's retrieve the decision path of each sample. The decision_path
+    # method allows to retrieve the node indicator functions. A non zero element of
+    # indicator matrix at the position (i, j) indicates that the sample i goes
+    # through the node j.
+    node_indicator = estimator.decision_path(X_test)
+    # Similarly, we can also have the leaves ids reached by each sample.
+    leave_id = estimator.apply(X_test)
+    # Now, it's possible to get the tests that were used to predict a sample or
+    # a group of samples. First, let's make it for the sample.
+    #sample_id = 0
+    node_index = node_indicator.indices[node_indicator.indptr[sample_id]: node_indicator.indptr[sample_id + 1]]
+    print(X_test[sample_id,:])
+    print('Rules used to predict sample %s: ' % sample_id)
+    for node_id in node_index:
+        # tabulation = " "*node_depth[node_id] #-> makes tabulation of each level of the tree
+        tabulation = ""
+        if leave_id[sample_id] == node_id:
+            print("%s==> Predicted leaf index \n"%(tabulation))
+        if (X_test[sample_id, feature[node_id]] <= threshold[node_id]):
+            threshold_sign = "<="
+        else:
+            threshold_sign = ">"
+        print("%sdecision id node %s : (X_test[%s, '%s'] (= %s) %s %s)"
+              % (tabulation,node_id,sample_id,feature_names[feature[node_id]],  X_test[sample_id, feature[node_id]],threshold_sign,threshold[node_id]))
+    print("%sPrediction for sample %d: %s"%(tabulation, sample_id,estimator.predict(X_test)[sample_id]))
+    # For a group of samples, we have the following common node.
+    sample_ids = [sample_id, 1]
+    common_nodes = (node_indicator.toarray()[sample_ids].sum(axis=0) ==len(sample_ids))
+    common_node_id = np.arange(n_nodes)[common_nodes]
+    print("\nThe following samples %s share the node %s in the tree" % (sample_ids, common_node_id))
+    print("It is %s %% of all nodes." % (100 * len(common_node_id) / n_nodes,))
+    for sample_id_ in sample_ids:
+        print("Prediction for sample %d: %s"%(sample_id_,estimator.predict(X_test)[sample_id_]))
+
+#Implementation of decision path
+for i,e in enumerate(estimator.estimators_):
+    print("Tree %d\n"%i)
+explore_tree(estimator.estimators_[i],n_nodes_[i],children_left_[i], children_right_[i],
+             feature_[i],threshold_[i], suffix=i, sample_id=1, feature_names = ["Feature_%d"%i for i in range(X_train.shape[1])])
+print('\n'*2)
+
+
+
