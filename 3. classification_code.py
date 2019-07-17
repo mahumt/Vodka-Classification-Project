@@ -262,10 +262,10 @@ def model_func(alg, X_train, X_test, Y_train, Y_test, target, predictors, filena
     plt.ylabel('predicted label');
     
     # Graph on testing data: line/model
-    #plt.scatter(target, predictions , marker='+', color='r')
-    #plt.xlabel("True Values")
-    #plt.ylabel("Predictions")
-    #plt.show()
+    plt.scatter(Y_test, predictions , marker='+', color='r')
+    plt.xlabel("True Values")
+    plt.ylabel("Predictions")
+    plt.show()
 
 
 warnings.filterwarnings('once') # to get warnings once in case the coefficents arent converging or any other problems
