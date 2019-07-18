@@ -235,7 +235,7 @@ def model_func(alg, X_train, X_test, Y_train, Y_test, target, predictors, filena
     
     #Print R-squared
     sse = ((Y_test - predictions) ** 2).sum(axis=0)
-    tse = ((Y_test  - np.average(Y_test , axis=0)) ** 2).sum(axis=0)
+    tse = ((Y_test  - np.average(Y_test , axis=0)) ** 2).sum(axis=0))
     print("R-squared : %.4g" % (1 - (sse / tse)))
     print("RMSE Test : %.4g" % np.sqrt(metrics.mean_squared_error((Y_test), predictions)))
     
@@ -248,7 +248,7 @@ def model_func(alg, X_train, X_test, Y_train, Y_test, target, predictors, filena
     print("Classification Report:\n%s" % (classification_report(Y_test, predictions, labels=np.unique(predictions))))
     
     CMat = ConfusionMatrix(Y_test, predictions)
-    print("Statistics regarding classification model =%s" % (CMat.stats())
+    print("Statistics regarding classification model =%s" % (CMat.stats()))
     
     # ROC-AUC score: closer to 1 the better. This metric dosen't work in multinomial cases.
     #k_fold = model_selection.KFold(n_splits=10, random_state=7)
@@ -427,7 +427,7 @@ plt.style.use('seaborn-white')
 col = plot_variables['category'].unique() #[1031200 1031080 1032200 1032080 1031100 1031090 1031110 1032230]
 fig, ax = plt.subplots() 
 width = 0.4 # the width of the bars 
-ind = np.arange(len(y)) # the x locations for the groups
+ind = np.arange(len(z)) # the x locations for the groups
 ax.barh(ind, z, width, color='green')
 ax.set_yticks(ind+width/10)
 ax.set_yticklabels(col, minor=False)
@@ -462,7 +462,7 @@ img
 
 # Using those arrays, we can parse the tree structure:
 
-estimator = DecisionTreeClassifier()
+estimator = RandomForestClassifier()
 estimator.fit(X_train, Y_train)
 n_nodes = estimator.tree_.node_count
 children_left = estimator.tree_.children_left
